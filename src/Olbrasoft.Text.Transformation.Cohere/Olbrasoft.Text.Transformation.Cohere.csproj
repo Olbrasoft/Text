@@ -16,11 +16,11 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageIcon>text-translation.png</PackageIcon>
+    <PackageIcon>olbrasoft-text-transformation-markdown.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\assets\text-translation.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\assets\olbrasoft-text-transformation-markdown.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
