@@ -4,9 +4,19 @@ on:
   push:
     branches: [ master, main ]
   workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -17,41 +27,77 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-          10.0.x
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Auto-increment version
+        id: version
+        run: |
+          BUMP_TYPE="${{ github.event.inputs.version_bump || 'patch' }}"
+          echo "Bump type: $BUMP_TYPE"
+          
+          for csproj in src/*/*.csproj; do
+            if [ -f "$csproj" ]; then
+              CURRENT=$(grep -oP '(?<=<Version>)[^<]+' "$csproj" || echo "1.0.0")
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+              
+              case $BUMP_TYPE in
+                major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+                minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+                patch) PATCH=$((PATCH + 1)) ;;
+              esac
+              
+              NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+              sed -i "s|<Version>$CURRENT</Version>|<Version>$NEW_VERSION</Version>|g" "$csproj"
+              echo "Updated $csproj: $CURRENT -> $NEW_VERSION"
+            fi
+          done
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
+      - name: Commit version changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/*/*.csproj
+          git diff --staged --quiet || git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }} [skip ci]"
+          git push
 
-    - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Pack all packages
-      run: |
-        mkdir -p ./artifacts
-        dotnet pack src/Olbrasoft.Text.Transformation.Markdown/Olbrasoft.Text.Transformation.Markdown.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Transformation.Abstractions/Olbrasoft.Text.Transformation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Transformation/Olbrasoft.Text.Transformation.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Transformation.Cohere/Olbrasoft.Text.Transformation.Cohere.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Transformation.OpenAICompatible/Olbrasoft.Text.Transformation.OpenAICompatible.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Translation.Abstractions/Olbrasoft.Text.Translation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Translation.Azure/Olbrasoft.Text.Translation.Azure.csproj --configuration Release --no-build --output ./artifacts
-        dotnet pack src/Olbrasoft.Text.Translation.DeepL/Olbrasoft.Text.Translation.DeepL.csproj --configuration Release --no-build --output ./artifacts
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
-    - name: Publish to NuGet.org
-      run: |
-        dotnet nuget push ./artifacts/*.nupkg \
-          --source https://api.nuget.org/v3/index.json \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
-          --skip-duplicate
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack all packages
+        run: |
+          mkdir -p ./artifacts
+          dotnet pack src/Olbrasoft.Text.Transformation.Markdown/Olbrasoft.Text.Transformation.Markdown.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Transformation.Abstractions/Olbrasoft.Text.Transformation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Transformation/Olbrasoft.Text.Transformation.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Transformation.Cohere/Olbrasoft.Text.Transformation.Cohere.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Transformation.OpenAICompatible/Olbrasoft.Text.Transformation.OpenAICompatible.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Translation.Abstractions/Olbrasoft.Text.Translation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Translation.Azure/Olbrasoft.Text.Translation.Azure.csproj --configuration Release --no-build --output ./artifacts
+          dotnet pack src/Olbrasoft.Text.Translation.DeepL/Olbrasoft.Text.Translation.DeepL.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Publish to NuGet.org
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --skip-duplicate
