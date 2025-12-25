@@ -24,6 +24,8 @@ A comprehensive .NET library for text transformation, AI-powered embeddings, sum
 | **Olbrasoft.Text.Translation.Abstractions** | Core interfaces for translation services | [![NuGet](https://img.shields.io/nuget/v/Olbrasoft.Text.Translation.Abstractions.svg)](https://www.nuget.org/packages/Olbrasoft.Text.Translation.Abstractions/) |
 | **Olbrasoft.Text.Translation.DeepL** | DeepL translation service implementation | [![NuGet](https://img.shields.io/nuget/v/Olbrasoft.Text.Translation.DeepL.svg)](https://www.nuget.org/packages/Olbrasoft.Text.Translation.DeepL/) |
 | **Olbrasoft.Text.Translation.Azure** | Azure Translator service implementation | [![NuGet](https://img.shields.io/nuget/v/Olbrasoft.Text.Translation.Azure.svg)](https://www.nuget.org/packages/Olbrasoft.Text.Translation.Azure/) |
+| **Olbrasoft.Text.Translation.Google** | Google Translate free API (unofficial, no key required) | [![NuGet](https://img.shields.io/nuget/v/Olbrasoft.Text.Translation.Google.svg)](https://www.nuget.org/packages/Olbrasoft.Text.Translation.Google/) |
+| **Olbrasoft.Text.Translation.Bing** | Bing Translator free API (unofficial, no key required) | [![NuGet](https://img.shields.io/nuget/v/Olbrasoft.Text.Translation.Bing.svg)](https://www.nuget.org/packages/Olbrasoft.Text.Translation.Bing/) |
 
 ### Markdown Processing
 
@@ -118,6 +120,12 @@ dotnet add package Olbrasoft.Text.Translation.DeepL
 
 # Azure Translator (Microsoft)
 dotnet add package Olbrasoft.Text.Translation.Azure
+
+# Google Translate (free, no API key required)
+dotnet add package Olbrasoft.Text.Translation.Google
+
+# Bing Translator (free, no API key required)
+dotnet add package Olbrasoft.Text.Translation.Bing
 ```
 
 ### Usage
@@ -143,13 +151,13 @@ public class TranslationService
 
 ### Configuration
 
-**DeepL:**
+**DeepL (API key required):**
 ```csharp
 services.AddSingleton<ITranslator>(sp =>
     new DeepLTranslator(new DeepLSettings { ApiKey = "your-api-key" }));
 ```
 
-**Azure Translator:**
+**Azure Translator (API key required):**
 ```csharp
 services.AddSingleton<ITranslator>(sp =>
     new AzureTranslator(new AzureTranslatorSettings
@@ -158,6 +166,26 @@ services.AddSingleton<ITranslator>(sp =>
         Region = "westeurope"
     }));
 ```
+
+**Google Translate (free, no API key):**
+```csharp
+services.AddSingleton<ITranslator, GoogleFreeTranslator>();
+services.Configure<GoogleFreeTranslatorSettings>(options =>
+{
+    options.TimeoutSeconds = 10;
+});
+```
+
+**Bing Translator (free, no API key):**
+```csharp
+services.AddSingleton<ITranslator, BingFreeTranslator>();
+services.Configure<BingFreeTranslatorSettings>(options =>
+{
+    options.TimeoutSeconds = 10;
+});
+```
+
+> **Note:** Google and Bing use unofficial APIs via web scraping. Rate limits may apply (~100 req/hour for Google). Best for personal/low-volume use.
 
 ---
 

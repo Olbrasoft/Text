@@ -86,14 +86,17 @@ jobs:
       - name: Pack all packages
         run: |
           mkdir -p ./artifacts
-          dotnet pack src/Olbrasoft.Text.Transformation.Markdown/Olbrasoft.Text.Transformation.Markdown.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Transformation.Abstractions/Olbrasoft.Text.Transformation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Transformation/Olbrasoft.Text.Transformation.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Transformation.Cohere/Olbrasoft.Text.Transformation.Cohere.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Transformation.OpenAICompatible/Olbrasoft.Text.Transformation.OpenAICompatible.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Translation.Abstractions/Olbrasoft.Text.Translation.Abstractions.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Translation.Azure/Olbrasoft.Text.Translation.Azure.csproj --configuration Release --no-build --output ./artifacts
-          dotnet pack src/Olbrasoft.Text.Translation.DeepL/Olbrasoft.Text.Translation.DeepL.csproj --configuration Release --no-build --output ./artifacts
+          # Automatically pack all projects in src/ directory
+          for csproj in src/*/*.csproj; do
+            if [ -f "$csproj" ]; then
+              echo "Packing $csproj..."
+              dotnet pack "$csproj" --configuration Release --no-build --output ./artifacts
+            fi
+          done
+
+          # List generated packages for verification
+          echo "Generated packages:"
+          ls -lh ./artifacts/*.nupkg
 
       - name: Publish to NuGet.org
         run: |
