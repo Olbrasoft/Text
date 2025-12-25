@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/Olbrasoft/Text</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Text Translation Azure Translator Microsoft</PackageTags>
-    <Version>10.0.1</Version>
+    <Version>10.0.2</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
