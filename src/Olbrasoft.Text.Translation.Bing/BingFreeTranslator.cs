@@ -25,6 +25,12 @@ public class BingFreeTranslator : ITranslator
     private readonly BingFreeTranslatorSettings _settings;
     private readonly ILogger<BingFreeTranslator> _logger;
 
+    /// <summary>
+    /// Maximum request size for Bing Translator (unofficial API).
+    /// Source: GTranslate library hardcoded limit.
+    /// </summary>
+    public int MaxRequestCharacters => 1000;
+
     public BingFreeTranslator(
         IOptions<BingFreeTranslatorSettings> settings,
         ILogger<BingFreeTranslator> logger)

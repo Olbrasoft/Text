@@ -14,6 +14,12 @@ public class AzureTranslator : ITranslator
     private readonly AzureTranslatorSettings _settings;
     private readonly ILogger<AzureTranslator> _logger;
 
+    /// <summary>
+    /// Maximum request size for Azure Translator (official API).
+    /// Source: Azure Cognitive Services documentation.
+    /// </summary>
+    public int MaxRequestCharacters => 50000;
+
     public AzureTranslator(
         HttpClient httpClient,
         IOptions<AzureTranslatorSettings> settings,

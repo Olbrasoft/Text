@@ -25,6 +25,12 @@ public class GoogleFreeTranslator : ITranslator
     private readonly GoogleFreeTranslatorSettings _settings;
     private readonly ILogger<GoogleFreeTranslator> _logger;
 
+    /// <summary>
+    /// Maximum request size for GoogleTranslator2 (recommended free API).
+    /// Source: GTranslate library hardcoded limit.
+    /// </summary>
+    public int MaxRequestCharacters => 5000;
+
     public GoogleFreeTranslator(
         IOptions<GoogleFreeTranslatorSettings> settings,
         ILogger<GoogleFreeTranslator> logger)

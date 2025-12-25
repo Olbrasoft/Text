@@ -20,6 +20,12 @@ public class DeepLTranslator : ITranslator
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
+    /// <summary>
+    /// Maximum request size for DeepL API (128 KiB = ~131,000 characters).
+    /// Source: DeepL API documentation.
+    /// </summary>
+    public int MaxRequestCharacters => 131000;
+
     public DeepLTranslator(
         HttpClient httpClient,
         IOptions<DeepLSettings> settings,

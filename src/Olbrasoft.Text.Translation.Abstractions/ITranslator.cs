@@ -6,6 +6,12 @@ namespace Olbrasoft.Text.Translation;
 public interface ITranslator
 {
     /// <summary>
+    /// Maximum number of characters allowed per translation request for this provider.
+    /// Used for automatic text chunking when translating long texts.
+    /// </summary>
+    int MaxRequestCharacters { get; }
+
+    /// <summary>
     /// Translates text to the target language.
     /// </summary>
     /// <param name="text">Text to translate.</param>
