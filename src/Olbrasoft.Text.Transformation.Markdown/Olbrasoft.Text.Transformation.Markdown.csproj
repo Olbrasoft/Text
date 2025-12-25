@@ -13,7 +13,7 @@
     <PackageIcon>olbrasoft-text-transformation-markdown.png</PackageIcon>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Transformation Markdown Html PlainText</PackageTags>
-    <Version>10.0.3</Version>
+    <Version>10.0.4</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
